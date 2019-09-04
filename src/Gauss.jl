@@ -1,7 +1,5 @@
 # The references to special cases are to Table of Integrals, Series, and Products, § 9.121, followed by NIST's DLMF.
 
-import ApproxFun: real, reverseorientation
-
 reverseorientation(x::Number) = x
 """
 Compute the Gauss hypergeometric function `₂F₁(a, b;c;z)`.
@@ -37,7 +35,7 @@ function _₂F₁(a::Number, b::Number, c::Number, z::Number)
     end
   elseif isequal(c, 2)
     if abeqcd(a, b, 1) # 6. 15.4.1
-      return (s = -z; log1p(s)/s)
+      return log1pover(-z)
     elseif a ∈ ℤ && b == 1 # 5.
       return expm1nlog1p(1-a, -z)
     elseif a == 1 && b ∈ ℤ # 5.
@@ -52,6 +50,8 @@ function _₂F₁(a::Number, b::Number, c::Number, z::Number)
   end
   _₂F₁general(a, b, c, z) # catch-all
 end
+
+
 
 
 # Special case of (-x)^a*_₂F₁ to handle LogNumber correctly in RiemannHilbert.jl
@@ -208,7 +208,7 @@ function mFncontinuedfraction(a::AbstractVector{S}, b::AbstractVector{U},
   T = promote_type(S, U, V)
   numerator(i) = - z * prod(i .+ a) / prod(i .+ b) / (i + 1)
   denominator(i) = 1 - numerator(i)
-  K = continuedfraction(denominator, numerator, 10eps(T)) - denominator(0)
+  K = continuedfraction(denominator, numerator, 10eps(real(T))) - denominator(0)
   iszero(K + 1) && error("Non convergence of continued fraction; inputs $a, $b, $z")
   return 1 + z * prod(a) / prod(b) / (1 + K)
 end
